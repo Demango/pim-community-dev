@@ -2,9 +2,9 @@
 
 namespace spec\Pim\Bundle\ReferenceDataBundle\Doctrine\ORM\Filter;
 
-use PhpSpec\ObjectBehavior;
-use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Query\Expr;
+use Doctrine\ORM\QueryBuilder;
+use PhpSpec\ObjectBehavior;
 use Pim\Bundle\CatalogBundle\Exception\InvalidArgumentException;
 use Pim\Bundle\CatalogBundle\Model\AttributeInterface;
 use Pim\Bundle\CatalogBundle\Validator\AttributeValidatorHelper;
@@ -67,7 +67,7 @@ class ReferenceDataFilterSpec extends ObjectBehavior
             )
             ->shouldBeCalled();
 
-        $this->addAttributeFilter($attribute, 'IN', $value);
+        $this->addAttributeFilter($attribute, 'IN', $value, null, null, ['field' => 'color_code']);
     }
 
     function it_adds_an_empty_filter_to_the_query($qb, $attrValidatorHelper, AttributeInterface $attribute)
@@ -89,7 +89,7 @@ class ReferenceDataFilterSpec extends ObjectBehavior
         $qb->leftJoin(Argument::any(), Argument::any())->shouldBeCalled();
         $qb->andWhere(Argument::any())->shouldBeCalled();
 
-        $this->addAttributeFilter($attribute, 'EMPTY', null);
+        $this->addAttributeFilter($attribute, 'EMPTY', null, null, null, ['field' => 'color_code']);
     }
 
     function it_throws_an_exception_if_value_is_not_an_valid_array(AttributeInterface $attribute)
@@ -99,14 +99,14 @@ class ReferenceDataFilterSpec extends ObjectBehavior
 
         $value = 'string';
         $this->shouldThrow(
-            InvalidArgumentException::arrayExpected(1, 'filter', 'reference_data', $value)
+            InvalidArgumentException::arrayExpected('color_code', 'filter', 'reference_data', $value)
         )
-            ->during('addAttributeFilter', [$attribute, '=', $value]);
+            ->during('addAttributeFilter', [$attribute, '=', $value, null, null, ['field' => 'color_code']]);
 
         $value = ['foo'];
         $this->shouldThrow(
-            InvalidArgumentException::numericExpected(1, 'filter', 'reference_data', 'string')
+            InvalidArgumentException::numericExpected('color_code', 'filter', 'reference_data', 'string')
         )
-            ->during('addAttributeFilter', [$attribute, '=', $value]);
+            ->during('addAttributeFilter', [$attribute, '=', $value, null, null, ['field' => 'color_code']]);
     }
 }

@@ -32,7 +32,7 @@ class ReferenceDataFilter extends AbstractAttributeFilter implements AttributeFi
     /**
      * Instanciate the base filter
      *
-     * @param array                          $supportedAttributes
+     * @param AttributeValidatorHelper       $attrValidatorHelper
      * @param ConfigurationRegistryInterface $registry
      * @param array                          $supportedOperators
      */
