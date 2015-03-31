@@ -13,6 +13,7 @@ use Pim\Bundle\CatalogBundle\Query\ProductQueryBuilderFactoryInterface;
 use Pim\Bundle\CatalogBundle\Query\ProductQueryBuilderInterface;
 use Pim\Bundle\CatalogBundle\Updater\ProductUpdaterInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\ValidatorInterface;
 
 /**
  * @author    Adrien Pétremann <adrien.petremann@akeneo.com>
@@ -39,25 +40,31 @@ class UpdateProductHandler extends AbstractConfigurableStepElement implements St
     /** @var PaginatorFactoryInterface */
     protected $paginatorFactory;
 
+    /** @var ValidatorInterface */
+    protected $validator;
+
     /**
      * @param ProductQueryBuilderFactoryInterface $pqbFactory
      * @param ProductUpdaterInterface             $productUpdater
      * @param BulkSaverInterface                  $productSaver
      * @param ObjectDetacherInterface             $objectDetacher
      * @param PaginatorFactoryInterface           $paginatorFactory
+     * @param ValidatorInterface                  $validator
      */
     public function __construct(
         ProductQueryBuilderFactoryInterface $pqbFactory,
         ProductUpdaterInterface $productUpdater,
         BulkSaverInterface $productSaver,
         ObjectDetacherInterface $objectDetacher,
-        PaginatorFactoryInterface $paginatorFactory
+        PaginatorFactoryInterface $paginatorFactory,
+        ValidatorInterface $validator
     ) {
         $this->pqbFactory       = $pqbFactory;
         $this->productUpdater   = $productUpdater;
         $this->productSaver     = $productSaver;
         $this->objectDetacher   = $objectDetacher;
         $this->paginatorFactory = $paginatorFactory;
+        $this->validator        = $validator;
     }
 
     /**
@@ -70,12 +77,21 @@ class UpdateProductHandler extends AbstractConfigurableStepElement implements St
         $actions = $configuration['actions'];
 
         foreach ($paginator as $productsPage) {
+            $invalidProducts = [];
             foreach ($productsPage as $product) {
                 $this->setData($product, $actions);
-                $this->stepExecution->incrementSummaryInfo('mass_edited');
+                $violations = $this->validator->validate($product);
 
-                // TODO: validation & skip
+                if (!empty($violations)) {
+                    $this->stepExecution->incrementSummaryInfo('skipped_items');
+                    var_dump($violations->);
+                    $this->stepExecution->addWarning($this->getName(), $violations, [], $product);
+                    $invalidProducts[] = $product;
+                }
+
+                $this->stepExecution->incrementSummaryInfo('mass_edited');
             }
+//            $this->detachProducts($invalidProducts);
 
             $this->productSaver->saveAll($productsPage, $this->getSavingOptions());
             $this->detachProducts($productsPage);

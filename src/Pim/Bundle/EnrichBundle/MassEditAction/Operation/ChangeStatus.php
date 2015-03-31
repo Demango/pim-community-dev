@@ -23,7 +23,7 @@ class ChangeStatus extends AbstractMassEditOperation implements
      */
     public function setToEnable($toEnable)
     {
-        $this->toEnable = $toEnable;
+        $this->toEnable = 'tooto';
 
         return $this;
     }
